@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-cript ='''
+cript = '''
         Здравствуй юный трейдер на криптие
     1 - BTC
     2 - ATOM
@@ -31,15 +31,24 @@ def calculate_macd(prices):
     macd_histogram = macd_line - signal_line
     return macd_line, signal_line, macd_histogram
 
-def vichislenia(url):
-    url = variant
+def calculate_index_strength(prices, volumes):
+    index_strength = (prices.diff() * volumes).dropna()
+    return index_strength
 
+def vichislenia(url):
     response = requests.get(url)
+    if response.status_code != 200:
+        print("Не удалось получить данные с сервера. Проверьте URL и ваше интернет-соединение.")
+        return
+
     data = response.json()
 
     df = pd.DataFrame(data['prices'], columns=['timestamp', 'price'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
+
+    # Добавляем столбец с объемами торгов
+    df['volume'] = [item[1] for item in data['total_volumes']]
 
     average_price_22 = df['price'].rolling(window=22).mean()
     average_price_9 = df['price'].rolling(window=9).mean()
@@ -49,7 +58,7 @@ def vichislenia(url):
 
     macd_line, signal_line, macd_histogram = calculate_macd(df['price'])
 
-    channel_width = df['price'].rolling(window=22).max() - df['price'].rolling(window=22).min()
+    index_strength = calculate_index_strength(df['price'], df['volume'])
 
     print("BTC")
     print("Средняя цена за 22 дня:")
@@ -66,9 +75,8 @@ def vichislenia(url):
     print(signal_line)
     print("\nMACD Histogram:")
     print(macd_histogram)
-    print("\nШирина канала за 22 дня:")
-    print(channel_width)
-
+    print("\nИндекс силы:")
+    print(index_strength)
 
 print(cript)
 tr = input("Введите число:")
