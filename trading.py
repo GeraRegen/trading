@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import matplotlib.pyplot as plt
 
 cript = '''
         Здравствуй юный трейдер на криптие
@@ -35,6 +36,17 @@ def calculate_index_strength(prices, volumes):
     index_strength = (prices.diff() * volumes).dropna()
     return index_strength
 
+def calculate_bull_bear_strength(prices, ema):
+    bull_strength = prices.rolling(window=22).max() - ema
+    bear_strength = prices.rolling(window=22).min() - ema
+    return bull_strength, bear_strength
+
+def calculate_stochastic_oscillator(prices, window):
+    min_price = prices.rolling(window=window).min()
+    max_price = prices.rolling(window=window).max()
+    stochastic_oscillator = ((prices - min_price) / (max_price - min_price)) * 100
+    return stochastic_oscillator
+
 def vichislenia(url):
     response = requests.get(url)
     if response.status_code != 200:
@@ -60,7 +72,11 @@ def vichislenia(url):
 
     index_strength = calculate_index_strength(df['price'], df['volume'])
 
-    print("BTC")
+    bull_strength, bear_strength = calculate_bull_bear_strength(df['price'], ema_22)
+
+    stochastic_oscillator_10 = calculate_stochastic_oscillator(df['price'], 10)
+    stochastic_oscillator_20 = calculate_stochastic_oscillator(df['price'], 20)
+
     print("Средняя цена за 22 дня:")
     print(average_price_22)
     print("\nСредняя цена за 9 дней:")
@@ -77,6 +93,35 @@ def vichislenia(url):
     print(macd_histogram)
     print("\nИндекс силы:")
     print(index_strength)
+    print("\nСила быков:")
+    print(bull_strength)
+    print("\nСила медведей:")
+    print(bear_strength)
+    print("\nStochastic Oscillator 10:")
+    print(stochastic_oscillator_10)
+    print("\nStochastic Oscillator 20:")
+    print(stochastic_oscillator_20)
+
+    # Создаем график
+    plt.figure(figsize=(14, 7))
+
+    # Добавляем линии на график
+    plt.plot(df.index, df['price'], label='Цена', color='blue')
+    plt.plot(df.index, average_price_22, label='Средняя цена за 22 дня', color='green')
+    plt.plot(df.index, average_price_9, label='Средняя цена за 9 дней', color='red')
+    plt.plot(df.index, ema_22, label='EMA за 22 дня', color='orange')
+    plt.plot(df.index, ema_9, label='EMA за 9 дней', color='purple')
+
+    # Добавляем оси и заголовок
+    plt.xlabel('Дата')
+    plt.ylabel('Цена')
+    plt.title('График цен')
+
+    # Добавляем легенду
+    plt.legend()
+
+    # Показываем график
+    plt.show()
 
 print(cript)
 tr = input("Введите число:")
