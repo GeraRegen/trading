@@ -1,6 +1,8 @@
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.dates as mdates
 
 cript = '''
         Здравствуй юный трейдер на криптие
@@ -77,6 +79,60 @@ def vichislenia(url):
     stochastic_oscillator_10 = calculate_stochastic_oscillator(df['price'], 10)
     stochastic_oscillator_20 = calculate_stochastic_oscillator(df['price'], 20)
 
+    fig = plt.figure(figsize=(14, 10))
+    gs = gridspec.GridSpec(2, 2, height_ratios=[3, 1], width_ratios=[1, 1])
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[1, 0])
+    ax4 = fig.add_subplot(gs[1, 1])
+
+    # Первый график: цены и EMA
+    ax1.plot(df.index, df['price'], label='Цена', color='blue')
+    ax1.plot(df.index, ema_22, label='EMA 22', color='orange')
+    ax1.plot(df.index, ema_9, label='EMA 9', color='green')
+    ax1.set_title('Цены и EMA')
+    ax1.set_xlabel('Дата')
+    ax1.set_ylabel('Цена')
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
+    ax1.legend()
+
+    # Второй график: объемы торгов
+    ax2.plot(df.index, df['volume'], label='Объемы', color='red')
+    ax2.set_title('Объемы торгов')
+    ax2.set_xlabel('Дата')
+    ax2.set_ylabel('Объем')
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
+    ax2.legend()
+
+    # Сила быков и медведей
+    ax3.bar(df.index, bull_strength, label='Сила быков', color='green')
+    ax3.bar(df.index, bear_strength, label='Сила медведей', color='red')
+    ax3.set_title('Сила быков и медведей')
+    ax3.set_xlabel('Дата')
+    ax3.set_ylabel('Сила')
+    ax3.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax3.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45)
+    ax3.legend()
+
+
+    #Macd SignalLine
+    ax4.plot(df.index, macd_line, label='MACD', color='blue')
+    ax4.plot(df.index, signal_line, label='Сигнальная линия', color='green')
+    ax4.plot(df.index, macd_histogram, label='MACD гистограмма', color='purple')
+    ax4.set_title("MACD")
+    ax4.set_xlabel('Дата')
+    ax4.set_ylabel('число')
+    ax4.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax4.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax4.xaxis.get_majorticklabels(), rotation=45)
+    ax4.legend()
+
     print("Средняя цена за 22 дня:")
     print(average_price_22)
     print("\nСредняя цена за 9 дней:")
@@ -102,26 +158,10 @@ def vichislenia(url):
     print("\nStochastic Oscillator 20:")
     print(stochastic_oscillator_20)
 
-    # Создаем график
-    plt.figure(figsize=(14, 7))
-
-    # Добавляем линии на график
-    plt.plot(df.index, df['price'], label='Цена', color='blue')
-    plt.plot(df.index, average_price_22, label='Средняя цена за 22 дня', color='green')
-    plt.plot(df.index, average_price_9, label='Средняя цена за 9 дней', color='red')
-    plt.plot(df.index, ema_22, label='EMA за 22 дня', color='orange')
-    plt.plot(df.index, ema_9, label='EMA за 9 дней', color='purple')
-
-    # Добавляем оси и заголовок
-    plt.xlabel('Дата')
-    plt.ylabel('Цена')
-    plt.title('График цен')
-
-    # Добавляем легенду
-    plt.legend()
-
-    # Показываем график
+    plt.tight_layout()
     plt.show()
+
+
 
 print(cript)
 tr = input("Введите число:")
